@@ -1,0 +1,32 @@
+steps:
+# Build image
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+    'build',
+    '-t', 'us-docker.pkg.dev/learners-digital-480411/learners-digital-docker-repo/learners-digital-website:$SHORT_SHA',
+    '.'
+  ]
+
+# Push image
+- name: 'gcr.io/cloud-builders/docker'
+  args: [
+    'push',
+    'us-docker.pkg.dev/learners-digital-480411/learners-digital-docker-repo/learners-digital-website:$SHORT_SHA'
+  ]
+
+# Deploy to Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: 'bash'
+  args:
+    - -c
+    - |
+      gcloud run deploy learners-digital-website \
+        --image=us-docker.pkg.dev/learners-digital-480411/learners-digital-docker-repo/learners-digital-website:$SHORT_SHA \
+        --region=us-central1 \
+        --platform=managed \
+        --allow-unauthenticated
+
+images:
+- "us-docker.pkg.dev/learners-digital-480411/learners-digital-docker-repo/learners-digital-website:$SHORT_SHA"
+
+timeout: "1200s"
