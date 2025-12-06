@@ -106,7 +106,7 @@ function MainHeroSection() {
 
           <p className="text-[0.95rem] sm:text-[1rem] md:text-[1.1rem] text-[#475569] leading-relaxed mb-8 max-w-[95%]">
             We bridge the gap between academics and industry by preparing students
-            for the workplace and helping companies hire trained professionals.
+            for the workplace and helping companies hire trained professionals!
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto">
