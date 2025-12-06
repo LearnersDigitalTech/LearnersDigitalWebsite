@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* optional: your custom CSS below */
+html, body {
+  height: 100%;
+}
+
