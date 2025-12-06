@@ -129,10 +129,9 @@ const VideoCard = forwardRef(function VideoCard(
   return (
     <div
       className={
-        "rounded-xl shadow-md transition-all flex flex-col gap-3 " +
+        "rounded-xl shadow-md transition-all flex flex-col gap-3 w-full " +
         (isActive ? "scale-100" : "scale-95 opacity-90")
       }
-      style={{ width: 360 }}
     >
       {/* TITLE + SUBTITLE ABOVE VIDEO - Clickable to YouTube */}
       {youtubeUrl ? (

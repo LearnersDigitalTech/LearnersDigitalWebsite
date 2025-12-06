@@ -39,8 +39,11 @@ export default function VideoSlider({ videos = [] }) {
       if (!el) return;
       const viewport = el.clientWidth;
       const totalGap = GAP * (visible - 1);
+      // Add extra padding on mobile to prevent overlap
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+      const mobilePadding = isMobile ? 32 : 0; // Account for px-4 on container
       // floor to avoid fractional widths which cause overlap on some devices
-      const w = Math.max(160, Math.floor((viewport - totalGap) / visible));
+      const w = Math.max(160, Math.floor((viewport - totalGap - mobilePadding) / visible));
       setCardW(w);
 
       // clamp start index so last visible window fits exactly
@@ -157,7 +160,7 @@ export default function VideoSlider({ videos = [] }) {
 
   return (
     <section className="w-full py-8">
-      <div className="max-w-[1200px] mx-auto px-4">
+      <div className="max-w-[1200px] mx-auto px-6 sm:px-4">
         <div className="mb-6">
           <h3 className="text-4xl font-Roboto-semibold text-[#0ea5e9] text-center">Work in Actions</h3>
           <p
@@ -170,12 +173,11 @@ export default function VideoSlider({ videos = [] }) {
         </div>
 
         <div className="relative">
-          {/* left control */}
+          {/* Desktop navigation buttons - hidden on mobile */}
           <button
             onClick={prev}
-            disabled={startIdx === 0}
             aria-label="Previous"
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all disabled:opacity-40 hover:scale-110"
+            className="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full items-center justify-center shadow-lg hover:shadow-xl transition-all hover:scale-110"
             style={{ border: "2px solid rgba(14,165,233,0.3)", zIndex: 20 }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -183,12 +185,10 @@ export default function VideoSlider({ videos = [] }) {
             </svg>
           </button>
 
-          {/* right control */}
           <button
             onClick={next}
-            disabled={startIdx >= maxStart}
             aria-label="Next"
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all disabled:opacity-40 hover:scale-110"
+            className="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 bg-white rounded-full items-center justify-center shadow-lg hover:shadow-xl transition-all hover:scale-110"
             style={{ border: "2px solid rgba(14,165,233,0.3)", zIndex: 20 }}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
@@ -198,11 +198,10 @@ export default function VideoSlider({ videos = [] }) {
 
           <div
             ref={containerRef}
-            className="overflow-hidden mx-auto relative"
-            style={{ width: "100%", boxSizing: "border-box", padding: 0 }}
+            className="overflow-hidden mx-auto relative px-4 sm:px-0"
+            style={{ width: "100%", boxSizing: "border-box" }}
           >
-
-            {/* track container (explicit width, no horizontal padding) */}
+            {/* track container with proper spacing to prevent overlap */}
             <div
               className="flex items-stretch"
               style={{
@@ -215,7 +214,7 @@ export default function VideoSlider({ videos = [] }) {
               }}
             >
               {videos.map((v, i) => (
-                <div key={v.id ?? i} style={{ width: cardW, flex: `0 0 ${cardW}px` }}>
+                <div key={v.id ?? i} style={{ width: cardW, flex: `0 0 ${cardW}px`, minWidth: cardW }}>
                   <VideoCard
                     ref={videoRefs.current[i]}
                     src={v.src}
@@ -229,6 +228,31 @@ export default function VideoSlider({ videos = [] }) {
                 </div>
               ))}
             </div>
+          </div>
+
+          {/* Mobile navigation buttons - below the slider */}
+          <div className="flex sm:hidden gap-4 justify-center mt-6">
+            <button
+              onClick={prev}
+              aria-label="Previous"
+              className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all hover:scale-110"
+              style={{ border: "2px solid rgba(14,165,233,0.3)" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M15 6L9 12L15 18" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+
+            <button
+              onClick={next}
+              aria-label="Next"
+              className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg hover:shadow-xl transition-all hover:scale-110"
+              style={{ border: "2px solid rgba(14,165,233,0.3)" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path d="M9 6L15 12L9 18" stroke="#0ea5e9" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
           </div>
         </div>
       </div>
