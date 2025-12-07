@@ -1,5 +1,7 @@
 "use client";
 import { useState } from "react";
+import { db } from "../../lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 export default function ContactSection() {
   const [form, setForm] = useState({
@@ -8,9 +10,36 @@ export default function ContactSection() {
     location: "",
     message: "",
   });
+  const [loading, setLoading] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setSubmitStatus(null);
+
+    try {
+      await addDoc(collection(db, "contact_inquiries"), {
+        name: form.name,
+        email: form.email,
+        location: form.location,
+        message: form.message,
+        submittedAt: serverTimestamp(),
+        status: "pending",
+      });
+
+      setSubmitStatus("success");
+      setForm({ name: "", email: "", location: "", message: "" });
+    } catch (error) {
+      console.error("Error submitting contact form:", error);
+      setSubmitStatus("error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -25,13 +54,13 @@ export default function ContactSection() {
       </h1>
 
       <p className="text-[#4b5563] mt-4 text-lg text-center max-w-2xl mx-auto leading-normal">
-        We’d love to collaborate with your organization, university, or campus.
+        We'd love to collaborate with your organization, university, or campus.
         Fill the form and our team will connect with you shortly.
       </p>
 
       {/* GRID */}
       <div className="grid lg:grid-cols-2 gap-12 mt-16">
-        
+
         {/* LEFT SIDE FORM */}
         <div className="space-y-8">
 
@@ -49,7 +78,7 @@ export default function ContactSection() {
 
           {/* Form Card */}
           <div className="bg-white border border-[#cdd6e5] p-8 rounded-2xl shadow-md">
-            <div className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
 
               {/* Name */}
               <div>
@@ -60,13 +89,14 @@ export default function ContactSection() {
                   placeholder="Your full name"
                   value={form.name}
                   onChange={handleChange}
+                  required
                   className="w-full bg-[#f6f8fc] text-[#1e1f24] px-4 py-3 rounded-xl border border-[#cdd6e5] focus:outline-none focus:border-[#0f8ddf]"
                 />
               </div>
 
               {/* Email + Dropdown */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
+
                 <div>
                   <label className="text-[#4b5563] block mb-2">Email</label>
                   <input
@@ -75,6 +105,7 @@ export default function ContactSection() {
                     placeholder="you@example.com"
                     value={form.email}
                     onChange={handleChange}
+                    required
                     className="w-full bg-[#f6f8fc] text-[#1e1f24] px-4 py-3 rounded-xl border border-[#cdd6e5] focus:outline-none focus:border-[#0f8ddf]"
                   />
                 </div>
@@ -85,6 +116,7 @@ export default function ContactSection() {
                     name="location"
                     value={form.location}
                     onChange={handleChange}
+                    required
                     className="w-full bg-[#f6f8fc] text-[#1e1f24] px-4 py-3 rounded-xl border border-[#cdd6e5] focus:outline-none focus:border-[#0f8ddf]"
                   >
                     <option value="">Select</option>
@@ -107,20 +139,35 @@ export default function ContactSection() {
                   placeholder="How can we help?"
                   value={form.message}
                   onChange={handleChange}
+                  required
                   className="w-full bg-[#f6f8fc] text-[#1e1f24] px-4 py-3 rounded-xl border border-[#cdd6e5] focus:outline-none focus:border-[#0f8ddf]"
                 ></textarea>
               </div>
 
+              {/* Success/Error Messages */}
+              {submitStatus === "success" && (
+                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-xl">
+                  Message sent successfully! We'll get back to you soon.
+                </div>
+              )}
+              {submitStatus === "error" && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-xl">
+                  Failed to send message. Please try again.
+                </div>
+              )}
+
               {/* Submit Button */}
               <button
-                className="w-full py-4 rounded-xl font-semibold text-lg text-white transition-all duration-300 hover:scale-[1.05] shadow-lg"
+                type="submit"
+                disabled={loading}
+                className="w-full py-4 rounded-xl font-semibold text-lg text-white transition-all duration-300 hover:scale-[1.05] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{
                   background: "linear-gradient(90deg, #0f8ddf, #0077c8)",
                 }}
               >
-                Send Message
+                {loading ? "Sending..." : "Send Message"}
               </button>
-            </div>
+            </form>
           </div>
         </div>
 
@@ -135,14 +182,12 @@ export default function ContactSection() {
             </p>
 
             <iframe
-  className="rounded-xl w-full h-64 mt-4"
-  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3897.500570368373!2d76.5940544!3d12.349365800000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3baf7be1a10aed1b%3A0x4b490c8db9dbf577!2z4LKo4LOH4LK44LKwIOCypOCyvuCyguCypOCzjeCysOCyv-CylSDgsongsqbgs43gsq_gsr7gsqjgsrXgsqg!5e0!3m2!1sen!2sin!4v1764229071880!5m2!1sen!2sin"
-  allowFullScreen
-  loading="lazy"
-  referrerPolicy="no-referrer-when-downgrade"
-></iframe>
-
-
+              className="rounded-xl w-full h-64 mt-4"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3897.500570368373!2d76.5940544!3d12.349365800000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3baf7be1a10aed1b%3A0x4b490c8db9dbf577!2z4LKo4LOH4LK44LKwIOCypOCyvuCyguCypOCzjeCysOCyv-CylSDgsongsqbgs43gsq_gsr7gsqjgsrXgsqg!5e0!3m2!1sen!2sin!4v1764229071880!5m2!1sen!2sin"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
           </div>
 
           {/* Appreciation */}

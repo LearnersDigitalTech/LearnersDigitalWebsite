@@ -2,6 +2,9 @@
 import { useState } from "react";
 import { Listbox } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
+import { db, storage } from "../lib/firebase";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
 const roles = ["Developer", "Trainer", "Internship", "Marketing", "HR"];
 const experiences = ["Fresher", "0-1 Year", "1-3 Years", "3-5 Years", "5+ Years"];
@@ -33,6 +36,8 @@ export default function JoinOurTeamForm() {
     message: "",
     resume: null,
   });
+  const [loading, setLoading] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState(null); // 'success', 'error', null
 
   const updateField = (field, value) => {
     setFormData({ ...formData, [field]: value });
@@ -43,44 +48,94 @@ export default function JoinOurTeamForm() {
     updateField(name, files ? files[0] : value);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert("Application Submitted Successfully!");
+    setLoading(true);
+    setSubmitStatus(null);
+
+    try {
+      let resumeURL = "";
+
+      // Upload resume to Firebase Storage if provided
+      if (formData.resume) {
+        const resumeRef = ref(
+          storage,
+          `resumes/${Date.now()}_${formData.resume.name}`
+        );
+        await uploadBytes(resumeRef, formData.resume);
+        resumeURL = await getDownloadURL(resumeRef);
+      }
+
+      // Save application to Firestore
+      await addDoc(collection(db, "career_applications"), {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        role: formData.role,
+        experience: formData.experience,
+        techStack: formData.techStack,
+        linkedin: formData.linkedin || "",
+        message: formData.message || "",
+        resumeURL,
+        submittedAt: serverTimestamp(),
+        status: "pending",
+      });
+
+      setSubmitStatus("success");
+      // Reset form
+      setFormData({
+        name: "",
+        email: "",
+        phone: "",
+        role: "",
+        experience: "",
+        techStack: "",
+        linkedin: "",
+        message: "",
+        resume: null,
+      });
+      // Reset file input
+      document.querySelector('input[type="file"]').value = "";
+    } catch (error) {
+      console.error("Error submitting application:", error);
+      setSubmitStatus("error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Reusable Dropdown
   const Dropdown = ({ label, value, setValue, items }) => (
-  <div className="w-full">
-    <label className="block text-gray-300 mb-1">{label}</label>
+    <div className="w-full">
+      <label className="block text-gray-300 mb-1">{label}</label>
 
-    <Listbox value={value} onChange={setValue}>
-      <div className="relative">
-        <Listbox.Button className="w-full bg-[#13233F] text-white border border-[#253652] rounded-lg px-4 py-3 text-left cursor-pointer focus:ring-2 focus:ring-blue-500 flex items-center justify-between">
-          <span className="truncate opacity-90">
-            {value || `Select ${label.replace(" *", "")}`}
-          </span>
-          <ChevronDownIcon className="w-5 h-5 opacity-80" />
-        </Listbox.Button>
+      <Listbox value={value} onChange={setValue}>
+        <div className="relative">
+          <Listbox.Button className="w-full bg-[#13233F] text-white border border-[#253652] rounded-lg px-4 py-3 text-left cursor-pointer focus:ring-2 focus:ring-blue-500 flex items-center justify-between">
+            <span className="truncate opacity-90">
+              {value || `Select ${label.replace(" *", "")}`}
+            </span>
+            <ChevronDownIcon className="w-5 h-5 opacity-80" />
+          </Listbox.Button>
 
-        <Listbox.Options className="absolute mt-2 w-full bg-white rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto touch-action-manipulation overscroll-contain">
-          {items.map((item) => (
-            <Listbox.Option key={item} value={item}>
-              {({ active }) => (
-                <div
-                  className={`px-4 py-2 cursor-pointer ${
-                    active ? "bg-gray-200" : "bg-white"
-                  }`}
-                >
-                  {item}
-                </div>
-              )}
-            </Listbox.Option>
-          ))}
-        </Listbox.Options>
-      </div>
-    </Listbox>
-  </div>
-);
+          <Listbox.Options className="absolute mt-2 w-full bg-white rounded-lg shadow-xl z-50 max-h-60 overflow-y-auto touch-action-manipulation overscroll-contain">
+            {items.map((item) => (
+              <Listbox.Option key={item} value={item}>
+                {({ active }) => (
+                  <div
+                    className={`px-4 py-2 cursor-pointer ${active ? "bg-gray-200" : "bg-white"
+                      }`}
+                  >
+                    {item}
+                  </div>
+                )}
+              </Listbox.Option>
+            ))}
+          </Listbox.Options>
+        </div>
+      </Listbox>
+    </div>
+  );
 
 
   return (
@@ -157,9 +212,25 @@ export default function JoinOurTeamForm() {
             />
           </div>
 
+          {/* Success/Error Messages */}
+          {submitStatus === "success" && (
+            <div className="bg-green-500/20 border border-green-500 text-green-300 px-4 py-3 rounded-lg">
+              ✅ Application submitted successfully! Our HR team will review and contact you if shortlisted.
+            </div>
+          )}
+          {submitStatus === "error" && (
+            <div className="bg-red-500/20 border border-red-500 text-red-300 px-4 py-3 rounded-lg">
+              ❌ Failed to submit application. Please try again or contact support.
+            </div>
+          )}
+
           {/* Submit */}
-          <button className="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded-lg text-white font-semibold text-lg transition">
-            Submit Application
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:cursor-not-allowed py-3 rounded-lg text-white font-semibold text-lg transition"
+          >
+            {loading ? "Submitting..." : "Submit Application"}
           </button>
         </form>
       </div>
