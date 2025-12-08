@@ -1,46 +1,39 @@
 name: Deploy to Cloud Run
-
 env:
   SERVICE_NAME: learners-digital-website
   PROJECT_ID: learners-digital-480411
-  REGION: us   # Artifact Registry/Cloud Run region
+  REGION: us-central1  # Cloud Run region
+  AR_REGION: us        # Artifact Registry LOCATION (this is correct)
   AR_REPOSITORY: learners-digital-docker-repo
-
 on:
   push:
     branches:
       - main
-
 jobs:
   dockerize-and-deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Google Cloud Auth
         uses: google-github-actions/auth@v2
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
           project_id: ${{ env.PROJECT_ID }}
-
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
           service_account_key: ${{ secrets.GCP_SA_KEY }}
-
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
-
+          gcloud auth configure-docker ${{ env.AR_REGION }}-docker.pkg.dev --quiet
       - name: Build and Push Docker Image
         run: |
           TAG=${GITHUB_SHA:0:7}
-          IMAGE=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPOSITORY }}/learners-digital-website:${TAG}
+          # FIXED: use AR_REGION (us), NOT REGION (us-central1)
+          IMAGE=${{ env.AR_REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPOSITORY }}/learners-digital-website:${TAG}
           echo "Using image: $IMAGE"
-
           docker build \
             --build-arg NEXT_PUBLIC_FIREBASE_API_KEY="${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" \
             --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}" \
@@ -49,13 +42,9 @@ jobs:
             --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" \
             --build-arg NEXT_PUBLIC_FIREBASE_APP_ID="${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}" \
             -t "$IMAGE" .
-
           docker push "$IMAGE"
-
-          # Export IMAGE and TAG for later steps
           echo "IMAGE=$IMAGE" >> $GITHUB_ENV
           echo "TAG=$TAG" >> $GITHUB_ENV
-
       - name: Create Cloud Run env file
         env:
           FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
@@ -73,7 +62,6 @@ jobs:
           NEXT_PUBLIC_FIREBASE_PROJECT_ID: "$FIREBASE_PROJECT_ID"
           NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "$FIREBASE_STORAGE_BUCKET"
           EOF
-
       - name: Deploy to Cloud Run
         run: |
           echo "Deploying to Cloud Run service: ${{ env.SERVICE_NAME }} in region ${{ env.REGION }}"
