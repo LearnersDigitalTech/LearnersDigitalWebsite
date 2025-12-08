@@ -3,7 +3,7 @@ name: Deploy to Cloud Run
 env:
   SERVICE_NAME: learners-digital-website
   PROJECT_ID: learners-digital-480411
-  REGION: us-central1    # Artifact Registry/Cloud Run region
+  REGION: us   # Artifact Registry/Cloud Run region
   AR_REPOSITORY: learners-digital-docker-repo
 
 on:
