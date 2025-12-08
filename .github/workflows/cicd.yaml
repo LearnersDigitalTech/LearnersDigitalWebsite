@@ -3,7 +3,8 @@ name: Deploy to Cloud Run
 env:
   SERVICE_NAME: learners-digital-website
   PROJECT_ID: learners-digital-480411
-  REGION: us-central1
+  REGION: us-central1    # Artifact Registry/Cloud Run region
+  AR_REPOSITORY: learners-digital-docker-repo
 
 on:
   push:
@@ -16,7 +17,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Google Cloud Auth
         uses: google-github-actions/auth@v2
@@ -24,28 +25,65 @@ jobs:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
           project_id: ${{ env.PROJECT_ID }}
 
-      - name: Set up Cloud SDK
+      - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
 
       - name: Configure Docker for Artifact Registry
         run: |
-          gcloud auth configure-docker us-docker.pkg.dev --quiet
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
       - name: Build and Push Docker Image
         run: |
-          # use the first 7 chars of the commit SHA as the tag
           TAG=${GITHUB_SHA:0:7}
-          echo "Using image tag: $TAG"
-          docker build -t us-docker.pkg.dev/${{ env.PROJECT_ID }}/learners-digital-docker-repo/learners-digital-website:$TAG .
-          docker push us-docker.pkg.dev/${{ env.PROJECT_ID }}/learners-digital-docker-repo/learners-digital-website:$TAG
+          IMAGE=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.AR_REPOSITORY }}/learners-digital-website:${TAG}
+          echo "Using image: $IMAGE"
+
+          docker build \
+            --build-arg NEXT_PUBLIC_FIREBASE_API_KEY="${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}" \
+            --build-arg NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}" \
+            --build-arg NEXT_PUBLIC_FIREBASE_PROJECT_ID="${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}" \
+            --build-arg NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}" \
+            --build-arg NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}" \
+            --build-arg NEXT_PUBLIC_FIREBASE_APP_ID="${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}" \
+            -t "$IMAGE" .
+
+          docker push "$IMAGE"
+
+          # Export IMAGE and TAG for later steps
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: (optional) Create Cloud Run env file
+        if: always()
+        env:
+          FIREBASE_API_KEY: ${{ secrets.NEXT_PUBLIC_FIREBASE_API_KEY }}
+          FIREBASE_APP_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_APP_ID }}
+          FIREBASE_AUTH_DOMAIN: ${{ secrets.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN }}
+          FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID }}
+          FIREBASE_PROJECT_ID: ${{ secrets.NEXT_PUBLIC_FIREBASE_PROJECT_ID }}
+          FIREBASE_STORAGE_BUCKET: ${{ secrets.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET }}
+        run: |
+          # Runtime env vars for Cloud Run (NEXT_PUBLIC_* are already embedded at build time)
+          cat > cloudrun-env.yaml <<EOF
+          NEXT_PUBLIC_FIREBASE_API_KEY: "$FIREBASE_API_KEY"
+          NEXT_PUBLIC_FIREBASE_APP_ID: "$FIREBASE_APP_ID"
+          NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: "$FIREBASE_AUTH_DOMAIN"
+          NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "$FIREBASE_MESSAGING_SENDER_ID"
+          NEXT_PUBLIC_FIREBASE_PROJECT_ID: "$FIREBASE_PROJECT_ID"
+          NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: "$FIREBASE_STORAGE_BUCKET"
+          EOF
 
       - name: Deploy to Cloud Run
         run: |
-          TAG=${GITHUB_SHA:0:7}
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
-            --image us-docker.pkg.dev/${{ env.PROJECT_ID }}/learners-digital-docker-repo/learners-digital-website:$TAG \
+          echo "Deploying to Cloud Run service: ${{ env.SERVICE_NAME }} in region ${{ env.REGION }}"
+          gcloud run deploy "${{ env.SERVICE_NAME }}" \
+            --image "$IMAGE" \
             --platform managed \
-            --region ${{ env.REGION }} \
+            --region "${{ env.REGION }}" \
+            --env-vars-file cloudrun-env.yaml \
             --allow-unauthenticated \
             --port 8080 \
             --memory 512Mi
