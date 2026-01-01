@@ -5,19 +5,19 @@ export default function JobsSection() {
   const [query, setQuery] = useState("");
 
   const jobs = [
-    { id: 1, title: "Program & Operations Lead - Associate", location: "Mysore", exp: "Fresher", color: "bg-blue-100", accent: "text-blue-600", link: "" },
-    { id: 2, title: "Technology & Product Engineer - Associate", location: "Mysore", exp: "Fresher", color: "bg-purple-100", accent: "text-purple-600", link: "" },
-    { id: 3, title: "Learning Experience Engineer", location: "Mysore", exp: "Fresher", color: "bg-yellow-100", accent: "text-yellow-600", link: "" },
-    { id: 4, title: "Growth & Marketing Lead ", location: "Mysore", exp: "Fresher", color: "bg-green-100", accent: "text-green-600", link: "" },
-    { id: 5, title: "Content & Assessment Lead ", location: "Mysore", exp: "Fresher", color: "bg-red-100", accent: "text-red-600", link: "" },
-    { id: 6, title: "Math Mentor ", location: "Mysore", exp: "Fresher", color: "bg-brown-100", accent: "text-brown-600", link: "" },
+    { id: 1, title: "Program & Operations Lead - Associate", location: "Mysore", exp: "Fresher", color: "bg-blue-100", accent: "text-blue-600", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
+    { id: 2, title: "Technology & Product Engineer - Associate", location: "Mysore", exp: "Fresher", color: "bg-purple-100", accent: "text-purple-600", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
+    { id: 3, title: "Learning Experience Engineer", location: "Mysore", exp: "Fresher", color: "bg-yellow-100", accent: "text-yellow-600", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
+    { id: 4, title: "Growth & Marketing Lead ", location: "Mysore", exp: "Fresher", color: "bg-green-100", accent: "text-green-600", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
+    { id: 5, title: "Content & Assessment Lead ", location: "Mysore", exp: "Fresher", color: "bg-red-100", accent: "text-red-600", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
+    { id: 6, title: "Math Mentor ", location: "Mysore", exp: "Fresher", color: "bg-brown-100", accent: "text-brown-600", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
   ];
 
   const internships = [
-    { id: "it", label: "IT & Dev", link: "" },
-    { id: "marketing", label: "Marketing", link: "" },
-    { id: "data", label: "Data", link: "" },
-    { id: "hr", label: "HR", link: "" },
+    { id: "it", label: "IT & Dev", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
+    { id: "marketing", label: "Marketing", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
+    { id: "data", label: "Data", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
+    { id: "hr", label: "HR", link: "https://forms.gle/DeAYaSafNAC6MKwY7" },
   ];
 
   const filtered = jobs.filter((j) =>
@@ -139,7 +139,7 @@ export default function JobsSection() {
               </div>
 
               <a
-                href="/Careers"
+                href="https://forms.gle/DeAYaSafNAC6MKwY7"
                 className="mt-4 inline-block w-full text-center bg-green-500 hover:bg-green-600 text-white font-semibold py-2 rounded-lg shadow-md transform hover:-translate-y-1 transition"
               >
                 Apply for Internship
