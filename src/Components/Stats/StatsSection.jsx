@@ -6,7 +6,7 @@ export default function HeroStats() {
   const [hasAnimated, setHasAnimated] = useState(false);
 
   const stats = [
-    { label: "Trained and Placed", value: 4000, suffix: "+" },
+    { label: "Trained and Placed", value: 5000, suffix: "+" },
     { label: "Hiring Partners", value: 7, suffix: "+" },
     { label: "University Partners", value: 20, suffix: "+" },
   ];

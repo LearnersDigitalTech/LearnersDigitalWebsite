@@ -38,10 +38,10 @@ export default function Header() {
     { label: "Home", href: "/" },
     { label: "Corporates", href: "/Corporate" },
     { label: "Universities", href: "/University" },
-    { label: "100% Club", href: "/math100" },
+    { label: "100% Club", href: "https://math100.learnersdigital.com" },
     // { label: "Opportunity", href: "/jobs" },
     { label: "About Us", href: "/About" },
-    { label: "Contact Us", href: "/Contact" }
+    // { label: "Contact Us", href: "/Contact" }
   ];
 
   return (
@@ -93,7 +93,7 @@ export default function Header() {
           </nav>
 
           {/* RIGHT: Login + Enquiry */}
-          <div className="flex items-center gap-5 ml-10">
+          {/* <div className="flex items-center gap-5 ml-10">
             <a href="/login" className="text-white text-[16px] font-semibold opacity-95 hover:opacity-100 hidden md:inline-block">
               Login
             </a>
@@ -102,12 +102,12 @@ export default function Header() {
               href="/Contact"
               className="flex items-center gap-2 bg-white text-[#1a232b] px-5 py-2 rounded-full font-bold shadow-[0px_4px_14px_rgba(0,118,200,0.25)] hover:-translate-y-[3px] hover:shadow-[0px_8px_22px_rgba(0,118,200,0.32)] transition-all duration-300 animate-[enquiryGlow_1.7s_ease-in-out_infinite]"
             >
-              <span>Enquiry Now</span>
+              <span>Enquire Now</span>
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7">
                 <path d="M5 12h14M13 5l6 7-6 7" />
               </svg>
             </a>
-          </div>
+          </div> */}
 
         </div>
       </header>
@@ -180,8 +180,8 @@ function DrawerLeft({ onClose, navItems, pathname }) {
               href={n.href}
               onClick={onClose}
               className={`p-3 rounded-lg text-gray-800 ${pathname === n.href
-                  ? 'bg-blue-50 font-semibold border-l-4 border-blue-500'
-                  : 'hover:bg-gray-50'
+                ? 'bg-blue-50 font-semibold border-l-4 border-blue-500'
+                : 'hover:bg-gray-50'
                 }`}
             >
               {n.label}

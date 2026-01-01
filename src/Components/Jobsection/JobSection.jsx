@@ -5,16 +5,19 @@ export default function JobsSection() {
   const [query, setQuery] = useState("");
 
   const jobs = [
-    { id: 1, title: "Frontend Developer", location: "Bangalore", exp: "2 - 4 Yrs", color: "bg-blue-100", accent: "text-blue-600" },
-    { id: 2, title: "Data Analyst", location: "Mumbai", exp: "1 - 3 Yrs", color: "bg-purple-100", accent: "text-purple-600" },
-    { id: 3, title: "Cloud Engineer", location: "Remote", exp: "3+ Yrs", color: "bg-yellow-100", accent: "text-yellow-600" },
+    { id: 1, title: "Program & Operations Lead - Associate", location: "Mysore", exp: "Fresher", color: "bg-blue-100", accent: "text-blue-600", link: "" },
+    { id: 2, title: "Technology & Product Engineer - Associate", location: "Mysore", exp: "Fresher", color: "bg-purple-100", accent: "text-purple-600", link: "" },
+    { id: 3, title: "Learning Experience Engineer", location: "Mysore", exp: "Fresher", color: "bg-yellow-100", accent: "text-yellow-600", link: "" },
+    { id: 4, title: "Growth & Marketing Lead ", location: "Mysore", exp: "Fresher", color: "bg-green-100", accent: "text-green-600", link: "" },
+    { id: 5, title: "Content & Assessment Lead ", location: "Mysore", exp: "Fresher", color: "bg-red-100", accent: "text-red-600", link: "" },
+    { id: 6, title: "Math Mentor ", location: "Mysore", exp: "Fresher", color: "bg-brown-100", accent: "text-brown-600", link: "" },
   ];
 
   const internships = [
-    { id: "it", label: "IT & Dev" },
-    { id: "marketing", label: "Marketing" },
-    { id: "data", label: "Data" },
-    { id: "hr", label: "HR" },
+    { id: "it", label: "IT & Dev", link: "" },
+    { id: "marketing", label: "Marketing", link: "" },
+    { id: "data", label: "Data", link: "" },
+    { id: "hr", label: "HR", link: "" },
   ];
 
   const filtered = jobs.filter((j) =>
@@ -67,7 +70,7 @@ export default function JobsSection() {
               </div>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[170px] overflow-y-auto pr-2 custom-scrollbar">
               {filtered.length === 0 && (
                 <div className="p-4 text-center text-sm text-slate-500 border border-dashed border-gray-100 rounded-lg">
                   No jobs match your search
@@ -75,34 +78,39 @@ export default function JobsSection() {
               )}
 
               {filtered.map((j) => (
-                <div
+                <a
                   key={j.id}
-                  className="flex items-center justify-between gap-4 p-3 rounded-lg border border-gray-100 bg-white hover:shadow-lg transition transform hover:-translate-y-1"
-                  role="listitem"
+                  href={j.link || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="block group"
                 >
-                  <div className="flex items-center gap-4 min-w-0">
-                    <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center font-semibold ${j.color}`}>
-                      <svg className={`w-5 h-5 ${j.accent}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                        <path d="M5 12h14M12 5v14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
+                  <div
+                    className="flex items-center justify-between gap-4 p-3 rounded-lg border border-gray-100 bg-white hover:shadow-lg transition transform hover:-translate-y-1"
+                    role="listitem"
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className={`flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center font-semibold ${j.color}`}>
+                        <svg className={`w-5 h-5 ${j.accent}`} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                          <path d="M5 12h14M12 5v14" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-semibold text-slate-900 group-hover:text-blue-600 transition-colors">{j.title}</div>
+                        <div className="text-xs text-slate-400 mt-1">{j.location} • {j.exp}</div>
+                      </div>
                     </div>
 
-                    <div className="min-w-0">
-                      <div className="truncate text-sm font-semibold text-slate-900">{j.title}</div>
-                      <div className="text-xs text-slate-400 mt-1">{j.location} • {j.exp}</div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      <span
+                        className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium border border-blue-100 text-blue-600 bg-white group-hover:bg-blue-50 transition"
+                      >
+                        Apply
+                      </span>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <a
-                      href={`/Careers`}
-                      className="inline-flex items-center px-3 py-1.5 rounded-md text-sm font-medium border border-blue-100 text-blue-600 bg-white hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-200 transition"
-                      aria-label={`Apply for ${j.title}`}
-                    >
-                      Apply
-                    </a>
-                  </div>
-                </div>
+                </a>
               ))}
             </div>
           </div>
@@ -117,7 +125,9 @@ export default function JobsSection() {
                 {internships.map((it) => (
                   <a
                     key={it.id}
-                    href={`/internships#${it.id}`}
+                    href={it.link || "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="flex items-center gap-3 bg-white p-3 rounded-md border border-gray-100 text-green-800 text-sm hover:shadow-md transform hover:-translate-y-1 transition"
                   >
                     <span className="inline-flex w-7 h-7 items-center justify-center rounded bg-green-50 text-green-600">
@@ -138,6 +148,22 @@ export default function JobsSection() {
           </aside>
         </div>
       </div>
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #f1f1f1;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #d1d5db;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #9ca3af;
+        }
+      `}</style>
     </section>
   );
 }
